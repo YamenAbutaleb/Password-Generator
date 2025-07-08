@@ -37,8 +37,9 @@ Index.html
 
 ---
 
-## 👁️‍🗨️ **تجربه*
-](https://password-generator-nn1.netlify.app/)---
+## 👁️‍🗨️ تجربه : 
+https://password-generator-nn1.netlify.app/
+------------
 
 ## 📈 **كيف يقيس القوة؟**
 
