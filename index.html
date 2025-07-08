@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberPass - Premium Password Generator</title>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg: #0a192f;
+            --text: #ccd6f6;
+            --card-bg: #112240;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            transition: all 0.4s;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,255,136,0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .password-display {
+            background: rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+
+        .password-text {
+            letter-spacing: 3px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            filter: brightness(1.2);
+        }
+
+        .strength-meter {
+            height: 5px;
+            background: #2e2e2e;
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            transition: all 0.4s;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="number"] {
+            background: var(--bg);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 0.5rem;
+            border-radius: 5px;
+            width: 70px;
+        }
+
+        .generate-btn {
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .generate-btn:hover {
+            letter-spacing: 2px;
+        }
+
+        /* Cyberpunk Animation */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                transparent 25%,
+                rgba(0,255,136,0.3) 50%,
+                transparent 75%
+            );
+            animation: scanline 3s infinite linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="password-display">
+            <div class="scanline"></div>
+            <span class="password-text" id="password">Click Generate</span>
+            <button class="copy-btn" onclick="copyPassword()">📋</button>
+        </div>
+        
+        <div class="strength-meter">
+            <div class="strength-fill" id="strengthBar"></div>
+        </div>
+
+        <div class="options-grid">
+            <div class="option-label">
+                <input type="number" id="length" value="12" min="8" max="32">
+                <span>Length</span>
+            </div>
+            <label class="option-label">
+                <input type="checkbox" id="uppercase" checked>
+                <span>A-Z</span>
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="numbers" checked>
+                <span>0-9</span>
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="symbols">
+                <span>!@#$</span>
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="excludeSimilar">
+                <span>No similar chars</span>
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="excludeAmbiguous">
+                <span>No ambiguous</span>
+            </label>
+        </div>
+
+        <button class="generate-btn" onclick="generatePassword()">
+            Generate Secure Password
+        </button>
+    </div>
+
+    <script>
+        const characterSets = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            numbers: '0123456789',
+            symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        };
+
+        function generatePassword() {
+            let charset = 'abcdefghijklmnopqrstuvwxyz';
+            const length = document.getElementById('length').value;
+            const options = {
+                uppercase: document.getElementById('uppercase').checked,
+                numbers: document.getElementById('numbers').checked,
+                symbols: document.getElementById('symbols').checked,
+                excludeSimilar: document.getElementById('excludeSimilar').checked,
+                excludeAmbiguous: document.getElementById('excludeAmbiguous').checked
+            };
+
+            if (options.uppercase) charset += characterSets.uppercase;
+            if (options.numbers) charset += characterSets.numbers;
+            if (options.symbols) charset += characterSets.symbols;
+
+            if (options.excludeSimilar) charset = charset.replace(/[iloLIOS]/g, '');
+            if (options.excludeAmbiguous) charset = charset.replace(/[{}[\]()/\\'"`~,;:.<>]/g, '');
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += charset[Math.floor(Math.random() * charset.length)];
+            }
+
+            document.getElementById('password').textContent = password;
+            updateStrengthMeter(password);
+        }
+
+        function updateStrengthMeter(password) {
+            let strength = 0;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 30;
+            if (password.length >= 16) strength += 20;
+            
+            const strengthBar = document.getElementById('strengthBar');
+            strengthBar.style.width = `${Math.min(strength, 100)}%`;
+            strengthBar.style.background = strength < 50 ? '#ff4444' : 
+                                          strength < 75 ? '#ffbb33' : '#00ff88';
+        }
+
+        function copyPassword() {
+            const password = document.getElementById('password').textContent;
+            navigator.clipboard.writeText(password);
+            
+            // Visual feedback
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = '📋', 1500);
+        }
+    </script>
+</body>
+</html>
